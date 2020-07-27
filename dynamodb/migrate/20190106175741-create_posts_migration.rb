@@ -2,7 +2,9 @@ class CreatePostsMigration < Dynomite::Migration
   def up
     create_table :posts do |t|
       t.partition_key "id:string:hash" # required
-      t.provisioned_throughput(5) # sets both read and write, defaults to 5 when not set
+      t.sort_key  "created_at:string" # optional
+      t.billing_mode(:PAY_PER_REQUEST) # or :PROVISIONED
+      # t.provisioned_throughput(5) # sets both read and write, defaults to 5 when not set
 
       # Instead of using partition_key and sort_key you can set the
       # key schema directly also
