@@ -4,7 +4,7 @@ Jets.application.routes.draw do
   get 'posts/new'
   get 'posts/edit'
   post 'posts/create'
-  update 'posts/update'
+  post 'posts/update'
   delete 'posts/delete'
 
   root "jets/public#show"
