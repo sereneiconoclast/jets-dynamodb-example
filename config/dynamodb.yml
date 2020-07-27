@@ -3,9 +3,6 @@
 # This is the default value.
 
 development:
-  table_namespace: <%= Jets.config.table_namespace %>
-  # More examples:
-  # table_namespace: demo-dev
 
   endpoint: http://localhost:8000 # comment out if want to test with real dynamodb
   # on AWS. You can also set the DYNAMODB_ENDPOINT environment variable.
@@ -16,7 +13,5 @@ development:
 test:
   # table_namespace: proj # do not include the env
   endpoint: http://localhost:8000
-  table_namespace: <%= Jets.config.table_namespace %>
 
 production:
-  table_namespace: <%= Jets.config.table_namespace %>

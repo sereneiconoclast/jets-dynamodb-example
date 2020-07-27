@@ -1,7 +1,9 @@
+require 'pry-byebug'
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :delete]
 
   def index
+    binding.pry
     @posts = Post.all
   end
 
