@@ -7,6 +7,10 @@ gem 'aws-record', '~> 2.0' # https://github.com/aws/aws-sdk-ruby-record
 # Include mysql2 gem if you are using ActiveRecord, remove if you are not
 # gem "mysql2", "~> 0.5.2"
 
+gem 'webpacker-jets'
+# gem 'webpacker', git: 'https://github.com/tongueroo/webpacker.git'
+# yarn add https://github.com/tongueroo/webpacker.git
+
 group :development, :test do
   # Call 'byebug' anywhere in the code to stop execution and get a debugger console
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]
