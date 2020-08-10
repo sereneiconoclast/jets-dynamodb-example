@@ -1,9 +1,7 @@
-require 'pry-byebug'
 class PostsController < ApplicationController
   before_action :set_post, only: [:show, :edit, :update, :delete]
 
   def index
-    binding.pry
     @posts = Post.all
   end
 
@@ -19,9 +17,10 @@ class PostsController < ApplicationController
 
   def create
     @post = Post.new(post_params)
+    @post.generate_id
+    @post.generate_creation_timestamp
 
-#   if @post.save
-    if @post.replace
+    if @post.save
 
       if request.xhr?
         render json: {success: true, location: url_for(@post)}
@@ -54,13 +53,20 @@ class PostsController < ApplicationController
     end
   end
 
-private
+  private
+
   # Use callbacks to share common setup or constraints between actions.
   def set_post
-    @post = Post.find(params[:id])
+    # For DynamoDB, the key must be a Hash describing the DynamoDB key,
+    # which includes a hash string and a range. Due to routing limitations,
+    # only one key can be passed, so we artificially combine the two parts
+    # of the key, and separate them again here.
+    compound_key = params[:compound_key]
+    id, created_at = ApplicationItem.split_compound_key(compound_key)
+    @post = Post.find(id: id, created_at: created_at)
   end
 
   def post_params
-    params.require(:post).permit(:title)
+    params.require(:post).permit(:title, :body)
   end
 end
