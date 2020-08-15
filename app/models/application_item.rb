@@ -75,4 +75,6 @@ class ApplicationItem
   def to_param
     compound_key
   end
+
+  def destroy; delete! end
 end

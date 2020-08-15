@@ -1,5 +1,5 @@
 Jets.application.routes.draw do
-  get  'posts', to: 'posts#index'
+  get    'posts', to: 'posts#index'
 
   # The below does not work...
   #
@@ -14,16 +14,16 @@ Jets.application.routes.draw do
   #
   # Therefore we must artificially combine the hash and range portions of the key,
   # and artificially split them apart
-  get  'posts/:compound_key', to: 'posts#show'
+  get    'posts/:compound_key', to: 'posts#show'
 
-  get  'posts/new', to: 'posts#new'
+  get    'posts/new', to: 'posts#new'
 
-# get  'posts/:id/:created_at/edit', to: 'posts#edit'
-  get  'posts/:compound_key/edit', to: 'posts#edit'
+# get    'posts/:id/:created_at/edit', to: 'posts#edit'
+  get    'posts/:compound_key/edit', to: 'posts#edit'
 
-  post 'posts', to: 'posts#create'
-  put  'posts/:compound_key', to: 'posts#update'
-  delete  'posts', to: 'posts#delete'
+  post   'posts', to: 'posts#create'
+  put    'posts/:compound_key', to: 'posts#update'
+  delete 'posts/:compound_key', to: 'posts#delete'
 
   # The jets/public#show controller can serve static utf8 content out of the public folder.
   # Note, as part of the deploy process Jets uploads files in the public folder to s3
