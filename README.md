@@ -1,10 +1,12 @@
-# Example DynamoDB Project with Dynomite
+# Example DynamoDB Project with Aws::Record
 
 [![BoltOps Badge](https://img.boltops.com/boltops/badges/boltops-badge.png)](https://www.boltops.com)
 
-Example project to help answer this question: [Running rspec over dynomite model with local dynamodb instance results in MissingCredentialsError](https://community.rubyonjets.com/t/running-rspec-over-dynomite-model-with-local-dynamodb-instance-results-in-missingcredentialserror/31/2)
+Fork of tongueroo/jets-dynamodb-example, an example project in answer to this question: [Running rspec over dynomite model with local dynamodb instance results in MissingCredentialsError](https://community.rubyonjets.com/t/running-rspec-over-dynomite-model-with-local-dynamodb-instance-results-in-missingcredentialserror/31/2)
 
-## Some Tips
+This fork uses [Aws::Record](https://github.com/aws/aws-sdk-ruby-record) instead of Dynomite.
+
+## Some Tips (unchanged from tongueroo's upstream repository)
 
 Recommend creating a `dynamodb-local` IAM user. The tools like https://github.com/aaronshaf/dynamodb-admin assume you have `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` setup. For the IAM User permission give it *nothing*, it doesn't need any actual IAM permissions. Looks like Jets is calling out to get the AWS account id in some cases too. Know it's a little silly to create an IAM user for this, but dynamodb-local creates a DB on your filesystem that includes the AWS_ACCESS_KEY_ID in the DB name. It looks something like this.
 
@@ -14,54 +16,22 @@ Recommend creating a `dynamodb-local` IAM user. The tools like https://github.co
 
 Make sure as you are creating the dynamodb tables both in `JETS_ENV=development` and `JETS_ENV=test` that it's writing to the same `your-aws-secret-access-key_us-west-2.db` file.
 
-I created an example repo to help answer this: https://github.com/tongueroo/jets-dynamodb-example
+## Another tip (new)
 
-Here's how I tested:
+I'm setting the database name to `Jets.project_namespace`, producing a table name like "demo-dev", a concatenation of the project name and the Jets environment name. There should only be one table, according to recommendations from AWS, with everything in it. Different types of objects should be distinguished by different primary keys.
 
-* Checked that config/dynamodb.yml is pointed to `http://localhost:8000` for both dev and test
+I'm not a DynamoDB expert, but I once watched a [YouTube Video](https://www.youtube.com/watch?v=HaEPXoXVf2k) of a talk given by one.
 
-Test development with `jets console`.
+## A mild warning
 
-    $ jets c
-    Jets booting up in development mode!
-    >> post = Post.new(title: "test title")
-    => #<Post:0x000056129f5859f0 @attrs={:title=>"test title"}>
-    >> post.replace
-    => {"id"=>"f564b8f82192556e13357bc226bd97238288bebf", :title=>"test title", "created_at"=>"2019-01-06T18:53:13Z", "updated_at"=>"2019-01-06T18:53:13Z"}
-    >> Post.scan.count
-    I, [2019-01-06T18:53:18.727636 #17317]  INFO -- : It's recommended to not use scan for production. It can be slow and expensive. You can a LSI or GSI and query the index instead.
-    I, [2019-01-06T18:53:18.727694 #17317]  INFO -- : Scanning table: demo-dev-posts
-    => 3
-    >>
+I created this fork by crashing around in the code until everything appeared to work. Correctness has not been proven. It appears to allow creates, updates, and deletes through the UI.
 
-Then I checked that the `.db` file was created in the right space on the filesystem: `/usr/local/Caskroom/dynamodb-local/latest/your-aws-secret-access-key_us-west-2.db`  Also used dynamodb-admin to check if the table exists:
+## TODO
 
-![dynamodb-admin-check-dev|690x253](https://raw.githubusercontent.com/tongueroo/jets-dynamodb-example/master/screenshots/dynamodb-admin-check-dev.png)
+Get the unit test to pass again.
 
-Then did the same thing for testing. First migrate the test DB.
+I had to make a small change to `Jets::Core#webpacker?` (in `.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/jets-2.3.16/lib/jets/core.rb`) to include:
 
-      $ JETS_ENV=test jets dynamodb:migrate ./dynamodb/migrate/20190106175741-create_posts_migration.rb
-      Running database migrations
-      DynamoDB Table: posts Status: ACTIVE
-      $
+ ... `|| Gem.loaded_specs.keys.include?("webpacker-jets")`
 
-Remember to check the `/usr/local/Caskroom/dynamodb-local/latest/` folder the `*.db` file again. And dynamodb-admin again
-
-![dynamodb-admin-check-test|690x304](https://raw.githubusercontent.com/tongueroo/jets-dynamodb-example/master/screenshots/dynamodb-admin-check-test.png)
-
-Then I was able to run the test, but not without a workaround. It looks like need to set the `AWS_REGION`. Will dig into fixing this in time. 👌
-
-      $ AWS_REGION=us-west-2 rspec
-      Post
-        loads attributes
-
-      Finished in 0.06104 seconds (files took 4.69 seconds to load)
-      1 example, 0 failures
-
-      $
-
-The spec is here: [models/post_spec.rb](https://github.com/tongueroo/jets-dynamodb-example/blob/master/spec/models/post_spec.rb)
-
-Hope that helps!
-
-PS. Would love for someone to help maintain dynomite. Also, as a part of this released a new version of dynomite and jets. Currently, jets is vendorizing dynomite but would like to remove the vendoring of it in time.
+As written, it was looking only for the gem "webpacker" and wouldn't recognize "webpacker-jets".
