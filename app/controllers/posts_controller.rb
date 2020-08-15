@@ -21,9 +21,8 @@ class PostsController < ApplicationController
     @post.generate_creation_timestamp
 
     if @post.save
-
       if request.xhr?
-        render json: {success: true, location: url_for(@post)}
+        render json: {success: true, location: post_path(@post)}
       else
         redirect_to post_path(@post)
       end
@@ -35,7 +34,7 @@ class PostsController < ApplicationController
   def update
     if @post.update(post_params)
       if request.xhr?
-        render json: {success: true, location: url_for(@post)}
+        render json: {success: true, location: post_path(@post)}
       else
         redirect_to post_path(@post)
       end
