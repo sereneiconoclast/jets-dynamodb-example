@@ -54,4 +54,33 @@ Jets.application.configure do
   # us-east-1 EDGE endpoint
   # config.domain.cert_arn = "arn:aws:acm:us-east-1:112233445566:certificate/d68472ba-04f8-45ba-b9db-14f839d57123"
   # config.domain.endpoint_type = "EDGE"
+
+  dynamodb = config.dynamodb = ActiveSupport::OrderedOptions.new
+  dynamodb.yaml = YAML.load(
+    ERB.new(
+      File.read("#{Jets.root}/config/dynamodb.yml")
+    ).result(binding)
+  )
+  dynamodb.endpoint = ENV['DYNAMODB_ENDPOINT'] ||
+    dynamodb.yaml[Jets.env]&.fetch('endpoint')
+  dynamodb.client = if dynamodb.endpoint
+    Aws::DynamoDB::Client.new endpoint: dynamodb.endpoint
+  else
+    Aws::DynamoDB::Client.new
+  end
+
+  # Recommended DynamoDB design: one table for
+  # the entire application
+  # See https://www.youtube.com/watch?v=HaEPXoXVf2k
+  #  or https://www.youtube.com/watch?v=6yqfmXiZTlM
+  dynamodb.table_name = Jets.project_namespace
+
+  config.iam_policy = [
+    Jets::Application.default_iam_policy,
+    {
+      action: ["dynamodb:*"],
+      effect: "Allow",
+      resource: "arn:aws:dynamodb:#{Jets.aws.region}:#{Jets.aws.account}:table/#{dynamodb.table_name}",
+    }
+  ]
 end

@@ -3,25 +3,11 @@ require 'active_model/naming' # ActiveModel::Name
 require 'securerandom'
 
 class ApplicationItem
-  @dynamodb_config = YAML.load(File.read(
-    "#{Jets.root}/config/dynamodb.yml"
-  ))
-  @dynamodb_endpoint = @dynamodb_config[Jets.env]['endpoint']
-  @dynamodb_client = if @dynamodb_endpoint
-    Aws::DynamoDB::Client.new endpoint: @dynamodb_endpoint
-  else
-    Aws::DynamoDB::Client.new
-  end
 
   def self.inherited(child_class)
     child_class.include(Aws::Record)
-
-    child_class.configure_client(client: @dynamodb_client)
-
-    # Recommended DynamoDB design: one table for
-    # the entire application
-    # See https://www.youtube.com/watch?v=HaEPXoXVf2k
-    child_class.set_table_name(Jets.project_namespace)
+    child_class.configure_client(client: Jets.config.dynamodb.client)
+    child_class.set_table_name(Jets.config.dynamodb.table_name)
   end
 
   # ActiveRecord's #all equates to Aws::Record's #scan

@@ -1,10 +1,12 @@
+# This file is parsed with ERB first, then YAML.
+#
 # Jets::Config.project_namespace is special value results in using the project namespace. Example :
 # table_namespace: <%= Jets.config.project_namespace %>
 # This is the default value.
 
 development:
 
-  endpoint: http://localhost:8000 # comment out if want to test with real dynamodb
+  # endpoint: http://localhost:8000 # comment out if want to test with real dynamodb
   # on AWS. You can also set the DYNAMODB_ENDPOINT environment variable.
   # You can also are actually deploying a development environment is to
   # change bin/server and export DYNAMODB_ENDPOINT=http://localhost:8000 at the top
@@ -12,6 +14,6 @@ development:
 
 test:
   # table_namespace: proj # do not include the env
-  endpoint: http://localhost:8000
+  # endpoint: http://localhost:8000
 
 production:
