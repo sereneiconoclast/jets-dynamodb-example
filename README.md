@@ -29,9 +29,3 @@ I created this fork by crashing around in the code until everything appeared to 
 ## TODO
 
 Get the unit test to pass again.
-
-I had to make a small change to `Jets::Core#webpacker?` (in `.rbenv/versions/2.7.1/lib/ruby/gems/2.7.0/gems/jets-2.3.16/lib/jets/core.rb`) to include:
-
- ... `|| Gem.loaded_specs.keys.include?("webpacker-jets")`
-
-As written, it was looking only for the gem "webpacker" and wouldn't recognize "webpacker-jets".

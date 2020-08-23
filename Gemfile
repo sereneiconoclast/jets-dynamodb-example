@@ -7,7 +7,8 @@ gem 'aws-record', '~> 2.0' # https://github.com/aws/aws-sdk-ruby-record
 # Include mysql2 gem if you are using ActiveRecord, remove if you are not
 # gem "mysql2", "~> 0.5.2"
 
-gem 'webpacker-jets'
+gem 'jetpacker' # https://github.com/tongueroo/jetpacker
+# gem 'webpacker-jets'
 # gem 'webpacker', git: 'https://github.com/tongueroo/webpacker.git'
 # yarn add https://github.com/tongueroo/webpacker.git
 
