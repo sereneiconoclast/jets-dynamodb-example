@@ -22,9 +22,9 @@ class PostsController < ApplicationController
 
     if @post.save
       if request.xhr?
-        render json: {success: true, location: post_path(@post)}
+        render json: {success: true, location: stage_aware_post_path(request)}
       else
-        redirect_to post_path(@post)
+        redirect_to stage_aware_post_path(request)
       end
     else
       render :new
@@ -34,9 +34,9 @@ class PostsController < ApplicationController
   def update
     if @post.update(post_params)
       if request.xhr?
-        render json: {success: true, location: post_path(@post)}
+        render json: {success: true, location: stage_aware_post_path(request)}
       else
-        redirect_to post_path(@post)
+        redirect_to stage_aware_post_path(request)
       end
     else
       render :edit
@@ -67,5 +67,12 @@ class PostsController < ApplicationController
 
   def post_params
     params.require(:post).permit(:title, :body)
+  end
+
+  # If the API Gateway stage is now, prepend it
+  def stage_aware_post_path request
+    leaf_path = post_path(@post)
+    stage = request.env['lambda.event']['requestContext']['stage']
+    stage ? "/#{stage}#{leaf_path}" : leaf_path
   end
 end
