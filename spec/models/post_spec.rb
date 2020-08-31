@@ -1,19 +1,27 @@
 describe Post do
-  before(:each) do
-    sts = double(:sts).as_null_object
-    Aws::STS::Client.any_instance.stub(:get_caller_identity).and_return(sts)
-  end
+  it "does CRUD operations" do
+    post = Post.new(title: "my title", body: "my body")
+    post.generate_id
+    post.generate_creation_timestamp
+    id = post.id
+    created_at = post.created_at
+    expect(post.to_h).to eq(title: "my title", body: "my body", id: id, created_at: created_at)
+    expect(post.save).to be true
 
-  it "loads attributes" do
-    sts = double(:sts).as_null_object
-    Aws::STS::Client.any_instance.stub(:get_caller_identity).and_return(sts)
+    created_at = created_at.to_i # this comes back as an integer
 
-    post = Post.new(title: "my title", desc: "my desc")
-    expect(post.attrs).to eq("title" => "my title", "desc" => "my desc")
+    load_post = Post.find id: post.id, created_at: post.created_at
+    expect(load_post.to_h).to eq(title: "my title", body: "my body", id: id, created_at: created_at)
 
-    post.attrs(title: "my title2")
-    expect(post.attrs).to eq("title" => "my title2", "desc" => "my desc")
+    expect(load_post.update(title: "my title2")).to be true
+    expect(load_post.to_h).to eq(title: "my title2", body: "my body", id: id, created_at: created_at)
 
-    post.replace
+    load_post = Post.find id: post.id, created_at: post.created_at
+    expect(load_post.to_h).to eq(title: "my title2", body: "my body", id: id, created_at: created_at)
+
+    expect(load_post.destroy).to be true
+
+    load_post = Post.find id: post.id, created_at: post.created_at
+    expect(load_post).to be nil
   end
 end

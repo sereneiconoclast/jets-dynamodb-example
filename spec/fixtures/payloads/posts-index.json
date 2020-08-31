@@ -10,7 +10,7 @@
     "CloudFront-Is-SmartTV-Viewer": "false",
     "CloudFront-Is-Tablet-Viewer": "false",
     "CloudFront-Viewer-Country": "US",
-    "Host": "qg45s7uvg2.execute-api.us-east-1.amazonaws.com",
+    "Host": "qg45s7uvg2.execute-api.us-west-2.amazonaws.com",
     "User-Agent": "curl/7.54.0",
     "Via": "1.1 3d3d633d266d05d90a4eea7a6a59b514.cloudfront.net (CloudFront)",
     "X-Amz-Cf-Id": "4mAgowukJJbA7lgTWITzgOPmdiDsXPCwy6vonS8VKPXCdEsmldVgdg==",

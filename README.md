@@ -28,4 +28,4 @@ I created this fork by crashing around in the code until everything appeared to 
 
 ## TODO
 
-Get the unit test to pass again.
+More sophisticated example, with a table containing two data types. Note, this should be cleaner to implement once [this issue](https://github.com/aws/aws-sdk-ruby-record/issues/107) is resolved.
