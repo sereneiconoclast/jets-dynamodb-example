@@ -10,6 +10,8 @@ Jets.application.configure do
   # config.env_extra = 2 # can also set this with JETS_ENV_EXTRA
   # config.extra_autoload_paths = []
 
+  # config.env_extra = 2 # can also set this with JETS_ENV_EXTRA
+  config.autoload_paths = []
   # config.asset_base_url = 'https://cloudfront.domain.com/assets' # example
 
   # config.cors = true # for '*'' # defaults to true
@@ -83,4 +85,5 @@ Jets.application.configure do
       resource: "arn:aws:dynamodb:#{Jets.aws.region}:#{Jets.aws.account}:table/#{dynamodb.table_name}",
     }
   ]
+  config.controllers.default_protect_from_forgery = false
 end
