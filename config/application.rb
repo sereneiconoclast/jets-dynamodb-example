@@ -9,8 +9,6 @@ Jets.application.configure do
 
   # config.env_extra = 2 # can also set this with JETS_ENV_EXTRA
   # config.extra_autoload_paths = []
-
-  # config.env_extra = 2 # can also set this with JETS_ENV_EXTRA
   config.autoload_paths = []
   # config.asset_base_url = 'https://cloudfront.domain.com/assets' # example
 
@@ -49,13 +47,22 @@ Jets.application.configure do
   # config.api.endpoint_type = 'PRIVATE' # Default is 'EDGE' https://amzn.to/2r0Iu2L
   # config.api.authorization_type = "AWS_IAM" # default is 'NONE' https://amzn.to/2qZ7zLh
 
+  config.domain.hosted_zone_name = "my-cool-domain-name.com"
+  config.domain.name = "#{config.project_name}.#{config.domain.hosted_zone_name}"
 
-  # config.domain.hosted_zone_name = "example.com"
+  # This should not be required if the "origin" custom header is supplied by CloudFront
+  # Look for "Origin Custom Header" in the Origin's definition, and define Header Name 'origin'
+  # config.app.domain = config.domain.name
+
   # us-west-2 REGIONAL endpoint
   # config.domain.cert_arn = "arn:aws:acm:us-west-2:112233445566:certificate/8d8919ce-a710-4050-976b-b33da991e123"
   # us-east-1 EDGE endpoint
   # config.domain.cert_arn = "arn:aws:acm:us-east-1:112233445566:certificate/d68472ba-04f8-45ba-b9db-14f839d57123"
   # config.domain.endpoint_type = "EDGE"
+
+  # Jets tries to populate the CNAME #{config.domain.name}
+  # If pointing this CNAME at CloudFront, Jets knows nothing about that
+  config.domain.route53 = false # Prevent Route53 from being managed by Jets
 
   dynamodb = config.dynamodb = ActiveSupport::OrderedOptions.new
   dynamodb.yaml = YAML.load(
