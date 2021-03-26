@@ -47,8 +47,8 @@ Jets.application.configure do
   # config.api.endpoint_type = 'PRIVATE' # Default is 'EDGE' https://amzn.to/2r0Iu2L
   # config.api.authorization_type = "AWS_IAM" # default is 'NONE' https://amzn.to/2qZ7zLh
 
-  config.domain.hosted_zone_name = "my-cool-domain-name.com"
-  config.domain.name = "#{config.project_name}.#{config.domain.hosted_zone_name}"
+  # config.domain.hosted_zone_name = "my-cool-domain-name.com"
+  # config.domain.name = "#{config.project_name}.#{config.domain.hosted_zone_name}"
 
   # This should not be required if the "origin" custom header is supplied by CloudFront
   # Look for "Origin Custom Header" in the Origin's definition, and define Header Name 'origin'
@@ -62,7 +62,7 @@ Jets.application.configure do
 
   # Jets tries to populate the CNAME #{config.domain.name}
   # If pointing this CNAME at CloudFront, Jets knows nothing about that
-  config.domain.route53 = false # Prevent Route53 from being managed by Jets
+  # config.domain.route53 = false # Prevent Route53 from being managed by Jets
 
   dynamodb = config.dynamodb = ActiveSupport::OrderedOptions.new
   dynamodb.yaml = YAML.load(

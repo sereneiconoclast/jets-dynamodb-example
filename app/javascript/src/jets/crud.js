@@ -35,7 +35,7 @@ $(function() {
   function handleUpdate(e) {
     var submit = $(e.target);
     var form = submit.closest('form');
-    var url = form.attr("action");
+    var url = form.attr("action") + '?xhr=true';
     var method = $("input[name=_method]");
 
     if (method.attr("value") != "put") {
@@ -65,7 +65,7 @@ $(function() {
     var node = link.closest('.jets-element-to-delete');
     node.hide(); // immediately hide element
 
-    var resource = link.attr("href");
+    var resource = link.attr("href") + '?xhr=true';
     var token = $('meta[name=csrf-token]').attr('content');
     var data = { authenticity_token: token };
     var request = $.ajax({
@@ -76,12 +76,12 @@ $(function() {
     });
 
     request.done(function(msg) {
-      console.log("msg %o", msg)
+      console.log("msg %o", msg);
       node.remove();
     });
 
     request.fail(function(jqXHR, textStatus) {
-      console.log("textStatus %o", textStatus)
+      console.log("textStatus %o", textStatus);
       node.show(); // in the event of a failure re-display the node
     });
   }

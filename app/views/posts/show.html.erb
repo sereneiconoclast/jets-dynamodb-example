@@ -2,7 +2,8 @@
   <strong>Title:</strong>
   <%= @post.title %>
 </p>
-<p><%= @post.body %></p>
+<pre><%= @post.body %>
+</pre>
 
 <%= link_to 'Edit', edit_post_path(@post) %> |
 <%= link_to 'Back', posts_path %>
