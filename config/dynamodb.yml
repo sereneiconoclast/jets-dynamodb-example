@@ -15,4 +15,6 @@ development:
 test:
   endpoint: http://localhost:8000
 
+  # See https://docs.aws.amazon.com/general/latest/gr/rande.html
 production:
+# endpoint: https://dynamodb.us-west-2.amazonaws.com
