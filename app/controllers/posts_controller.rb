@@ -45,6 +45,9 @@ class PostsController < ApplicationController
   end
 
   def show
+    if request.xhr?
+      render json: {success: true, object: @post.to_json}
+    end
   end
 
   def new

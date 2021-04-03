@@ -1,10 +1,65 @@
-// Run this example by adding <%= javascript_pack_tag 'hello_react' %> to the head of your layout file,
-// like app/views/layouts/application.html.erb. All it does is render <div>Hello React</div> at the bottom
-// of the page.
-
 import React from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
+
+
+class Post extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      error: null,
+      isLoaded: false,
+      post_id: props.post_id,
+      post: null,
+    };
+  }
+
+  componentDidMount() {
+    fetch("http://toy.infinitequack.net:8888/posts/" + this.state.post_id + "?xhr=true")
+      .then(res => res.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            post: result.object
+          });
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+  }
+
+  render() {
+    const { error, isLoaded, post } = this.state;
+    if (!isLoaded) {
+      return <div>Loading...</div>;
+    }
+    if (error) {
+      return <div>Error: {error.message}</div>;
+    } else {
+      const createdAt = new Date();
+      createdAt.setTime(post.created_at * 1000);
+      return (
+	<div>
+	  <p>
+	    <strong>Title:</strong> {post.title} (created {createdAt.toISOString()})
+	  </p>
+	  <pre>{post.body}
+	  </pre>
+	  <pre>{JSON.stringify(post, null, 4)}
+	  </pre>
+	</div>
+      );
+    }
+  }
+}
 
 function Square(props) {
   return (
@@ -114,7 +169,7 @@ function calculateWinner(squares) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log("DOMContentLoaded kicks into high gear");
   ReactDOM.render(
-    <Game />,
+    <Post post_id={"5fd12341-cee0-4dbd-8e5e-576918920fc8_1616983908"}/>,
     document.getElementById('react-root')
   );
   console.log("DOMContentLoaded goes to sleep for another century");

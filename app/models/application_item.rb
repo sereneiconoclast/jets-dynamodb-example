@@ -28,6 +28,10 @@ class ApplicationItem
     to_h.tap {|h| h[Class] = self.class}.hash
   end
 
+  def to_json
+    to_h.tap {|h| h[:class] = self.class.to_s}
+  end
+
   def model_name
     ActiveModel::Name.new(self.class)
   end
