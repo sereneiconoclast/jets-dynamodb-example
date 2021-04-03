@@ -41,12 +41,15 @@ class PostsController < ApplicationController
   before_action :set_actual_host
 
   def index
-    @posts = Post.all
+    @posts = Post.all.to_a
+    if request.xhr?
+      render json: {posts: @posts.map(&:to_json)}
+    end
   end
 
   def show
     if request.xhr?
-      render json: {success: true, object: @post.to_json}
+      render json: {post: @post.to_json}
     end
   end
 

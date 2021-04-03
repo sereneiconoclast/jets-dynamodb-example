@@ -2,26 +2,49 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import PropTypes from 'prop-types'
 
+// https://www.npmjs.com/package/react-time-ago
+import TimeAgo from 'javascript-time-ago'
+import en from 'javascript-time-ago/locale/en'
+// import ru from 'javascript-time-ago/locale/ru'
+TimeAgo.addDefaultLocale(en)
+// TimeAgo.addLocale(ru)
+import ReactTimeAgo from 'react-time-ago'
 
-class Post extends React.Component {
+
+function Post(post) {
+  const createdAt = new Date();
+  createdAt.setTime(post.created_at * 1000);
+  return (
+    <div className="post">
+      <p>
+        <strong>{post.title}</strong> {' '}
+        (created <ReactTimeAgo date={createdAt} locale="en-US"/> {' '}
+        at {createdAt.toISOString()})
+      </p>
+      <pre>{post.body}
+      </pre>
+    </div>
+  );
+}
+
+class PostApp extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       error: null,
       isLoaded: false,
-      post_id: props.post_id,
-      post: null,
+      posts: [],
     };
   }
 
   componentDidMount() {
-    fetch("http://toy.infinitequack.net:8888/posts/" + this.state.post_id + "?xhr=true")
+    fetch("http://toy.infinitequack.net:8888/posts?xhr=true")
       .then(res => res.json())
       .then(
         (result) => {
           this.setState({
             isLoaded: true,
-            post: result.object
+            posts: result.posts
           });
         },
         // Note: it's important to handle errors here
@@ -37,25 +60,18 @@ class Post extends React.Component {
   }
 
   render() {
-    const { error, isLoaded, post } = this.state;
+    const { error, isLoaded, posts } = this.state;
     if (!isLoaded) {
       return <div>Loading...</div>;
     }
     if (error) {
       return <div>Error: {error.message}</div>;
     } else {
-      const createdAt = new Date();
-      createdAt.setTime(post.created_at * 1000);
+      const postComponents = posts.map((post) =>
+        <li key={post.id}>{Post(post)}</li>
+      );
       return (
-	<div>
-	  <p>
-	    <strong>Title:</strong> {post.title} (created {createdAt.toISOString()})
-	  </p>
-	  <pre>{post.body}
-	  </pre>
-	  <pre>{JSON.stringify(post, null, 4)}
-	  </pre>
-	</div>
+        <ul>{postComponents}</ul>
       );
     }
   }
@@ -169,7 +185,7 @@ function calculateWinner(squares) {
 document.addEventListener('DOMContentLoaded', () => {
   console.log("DOMContentLoaded kicks into high gear");
   ReactDOM.render(
-    <Post post_id={"5fd12341-cee0-4dbd-8e5e-576918920fc8_1616983908"}/>,
+    <PostApp/>,
     document.getElementById('react-root')
   );
   console.log("DOMContentLoaded goes to sleep for another century");

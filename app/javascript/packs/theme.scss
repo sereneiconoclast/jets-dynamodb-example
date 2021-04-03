@@ -36,6 +36,12 @@
     padding-left: 30px;
   }
 
+  .post {
+    padding: 20px;
+    background-color: #eee;
+    border: 1px solid black;
+  }
+
   .board-row:after {
     clear: both;
     content: "";
