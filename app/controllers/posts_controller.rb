@@ -67,8 +67,8 @@ class PostsController < ApplicationController
     @its_post_path = post_path(@post)
 
     if @post.save
-      if request.xhr? # Currently never happens; no handleCreate in crud.js
-        render json: {success: true, location: add_stage_name(@its_post_path)}
+      if request.xhr?
+        render json: {post: @post.to_json}
       else
         redirect_to @its_post_path
       end

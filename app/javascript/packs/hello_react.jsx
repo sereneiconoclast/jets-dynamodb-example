@@ -27,6 +27,67 @@ function Post(post) {
   );
 }
 
+class NewPost extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      app: props.app,
+      open: false,
+      title: '',
+      body: ''
+    };
+  }
+
+  handlePost() {
+    const post = {post: {title: this.state.title, body: this.state.body}};
+    console.log("Posting " + JSON.stringify(post, null, 4));
+
+    fetch('http://toy.infinitequack.net:8888/posts?xhr=true', {
+      method: 'post',
+      headers: {
+        'Accept': 'application/json, text/plain, */*',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(post)
+    }).then(res => res.json())
+      .then(
+        (result) => {
+          console.log('Post response: ' + JSON.stringify(result, null, 4));
+          this.setState({open: false, title: '', body: ''});
+          this.state.app.refresh();
+        },
+        (error) => {
+          alert("Post failed: " + error);
+        }
+      );
+  }
+
+  newPostOrCancelButton(newIsOpen) {
+    const text = newIsOpen ? 'Compose new post' : 'Cancel';
+    const onClick = () => {this.setState({open: newIsOpen})}
+    return <button onClick={onClick}>{text}</button>;
+  }
+
+  render() {
+    const { open, title, body } = this.state;
+    if (!open) {
+      return this.newPostOrCancelButton(true);
+    }
+    return (
+      <div className="newPost">
+        <p><input id="newPostTitle" type="text" value={this.state.title} onInput={(e) => {this.setState({title: e.target.value})}} /></p>
+        <p><textarea id="newPostBody" value={this.state.body} onInput={(e) => {this.setState({body: e.target.value})}} /></p>
+        <p>Preview:</p>
+        <p><strong>{this.state.title}</strong></p>
+        <pre>{this.state.body}
+        </pre>
+        <button onClick={() => {this.handlePost()}}>Post</button>
+        {this.newPostOrCancelButton(false)}
+      </div>
+    );
+  }
+}
+
 class PostApp extends React.Component {
   constructor(props) {
     super(props);
@@ -38,6 +99,13 @@ class PostApp extends React.Component {
   }
 
   componentDidMount() {
+    this.refresh();
+  }
+
+  refresh() {
+    this.setState({
+      isLoaded: false
+    });
     fetch("http://toy.infinitequack.net:8888/posts?xhr=true")
       .then(res => res.json())
       .then(
@@ -71,18 +139,14 @@ class PostApp extends React.Component {
         <li key={post.id}>{Post(post)}</li>
       );
       return (
-        <ul>{postComponents}</ul>
+        <div className="PostApp">
+          <ul>{postComponents}</ul>
+          <NewPost app={this} />
+          <button onClick={() => {this.refresh()}}>Refresh</button>
+        </div>
       );
     }
   }
-}
-
-function Square(props) {
-  return (
-    <button className="square" onClick={props.onClick}>
-      {props.value}
-    </button>
-  );
 }
 
 class Board extends React.Component {
@@ -160,25 +224,6 @@ class Game extends React.Component {
   }
 }
 
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
-}
 
 // ========================================
 
