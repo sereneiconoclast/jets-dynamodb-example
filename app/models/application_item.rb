@@ -29,7 +29,7 @@ class ApplicationItem
   end
 
   def to_json
-    to_h.tap {|h| h[:class] = self.class.to_s}
+    to_h.tap {|h| h[:class] = self.class.to_s; h[:compound_key] = compound_key}
   end
 
   def model_name

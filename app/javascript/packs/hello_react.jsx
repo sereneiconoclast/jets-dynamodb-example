@@ -11,7 +11,7 @@ TimeAgo.addDefaultLocale(en)
 import ReactTimeAgo from 'react-time-ago'
 
 
-function Post(post) {
+function Post(post, onDelete) {
   const createdAt = new Date();
   createdAt.setTime(post.created_at * 1000);
   return (
@@ -19,7 +19,8 @@ function Post(post) {
       <p>
         <strong>{post.title}</strong> {' '}
         (created <ReactTimeAgo date={createdAt} locale="en-US"/> {' '}
-        at {createdAt.toISOString()})
+        at {createdAt.toISOString()}) {' '}
+        <button onClick={onDelete}>Delete</button>
       </p>
       <pre>{post.body}
       </pre>
@@ -127,6 +128,44 @@ class PostApp extends React.Component {
       )
   }
 
+  deletePostRequest(post) {
+    var sure = confirm("Delete post with title '" + post.title + "'?");
+    if (sure) {
+      fetch('http://toy.infinitequack.net:8888/posts/' + post.compound_key + '?xhr=true', {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json, text/plain, */*',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(post)
+      }).then(res => res.json())
+        .then(
+          (result) => {
+            console.log('Delete post response: ' + JSON.stringify(result, null, 4));
+            this.hidePost(post.compound_key);
+          },
+          (error) => {
+            alert("Post deletion failed: " + error);
+          }
+        );
+    } else {
+      console.log("Deletion cancelled");
+    }
+  }
+
+  hidePost(postKey) {
+    alert("Looking to hide post " + postKey);
+    const newPosts = this.state.posts.slice(); // i.e. dup
+    const index = newPosts.findIndex(element => element.compound_key == postKey);
+    if (index == -1) {
+      alert("Unexpected: We have no post with ID " + postKey);
+    } else {
+      alert("Looking to hide post number " + index);
+      newPosts.splice(index, 1); // remove 1 element
+      this.setState({posts: newPosts});
+    }
+  }
+
   render() {
     const { error, isLoaded, posts } = this.state;
     if (!isLoaded) {
@@ -136,7 +175,7 @@ class PostApp extends React.Component {
       return <div>Error: {error.message}</div>;
     } else {
       const postComponents = posts.map((post) =>
-        <li key={post.id}>{Post(post)}</li>
+        <li key={post.compound_key}>{Post(post, e =>{this.deletePostRequest(post)})}</li>
       );
       return (
         <div className="PostApp">
