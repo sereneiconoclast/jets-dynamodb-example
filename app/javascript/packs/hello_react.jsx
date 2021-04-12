@@ -10,6 +10,11 @@ TimeAgo.addDefaultLocale(en)
 // TimeAgo.addLocale(ru)
 import ReactTimeAgo from 'react-time-ago'
 
+const thisPageUrl = window.location.href;
+const standardPostHeaders = {
+  'Accept': 'application/json, text/plain, */*',
+  'Content-Type': 'application/json'
+}
 
 function Post(post, onDelete) {
   const createdAt = new Date();
@@ -43,12 +48,9 @@ class NewPost extends React.Component {
     const post = {post: {title: this.state.title, body: this.state.body}};
     console.log("Posting " + JSON.stringify(post, null, 4));
 
-    fetch('http://toy.infinitequack.net:8888/posts?xhr=true', {
+    fetch(thisPageUrl + '?xhr=true', {
       method: 'post',
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'Content-Type': 'application/json'
-      },
+      headers: standardPostHeaders,
       body: JSON.stringify(post)
     }).then(res => res.json())
       .then(
@@ -107,7 +109,7 @@ class PostApp extends React.Component {
     this.setState({
       isLoaded: false
     });
-    fetch("http://toy.infinitequack.net:8888/posts?xhr=true")
+    fetch(thisPageUrl + '?xhr=true')
       .then(res => res.json())
       .then(
         (result) => {
@@ -131,12 +133,9 @@ class PostApp extends React.Component {
   deletePostRequest(post) {
     var sure = confirm("Delete post with title '" + post.title + "'?");
     if (sure) {
-      fetch('http://toy.infinitequack.net:8888/posts/' + post.compound_key + '?xhr=true', {
+      fetch(thisPageUrl + '/' + post.compound_key + '?xhr=true', {
         method: 'DELETE',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json'
-        },
+        headers: standardPostHeaders,
         body: JSON.stringify(post)
       }).then(res => res.json())
         .then(
@@ -154,13 +153,11 @@ class PostApp extends React.Component {
   }
 
   hidePost(postKey) {
-    alert("Looking to hide post " + postKey);
     const newPosts = this.state.posts.slice(); // i.e. dup
     const index = newPosts.findIndex(element => element.compound_key == postKey);
     if (index == -1) {
       alert("Unexpected: We have no post with ID " + postKey);
     } else {
-      alert("Looking to hide post number " + index);
       newPosts.splice(index, 1); // remove 1 element
       this.setState({posts: newPosts});
     }
