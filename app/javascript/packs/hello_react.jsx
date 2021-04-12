@@ -16,7 +16,7 @@ const standardPostHeaders = {
   'Content-Type': 'application/json'
 }
 
-function Post(post, onDelete) {
+function Post(post, onEdit, onDelete) {
   const createdAt = new Date();
   createdAt.setTime(post.created_at * 1000);
   return (
@@ -25,6 +25,7 @@ function Post(post, onDelete) {
         <strong>{post.title}</strong> {' '}
         (created <ReactTimeAgo date={createdAt} locale="en-US"/> {' '}
         at {createdAt.toISOString()}) {' '}
+        <button onClick={onEdit}>Edit</button> {' '}
         <button onClick={onDelete}>Delete</button>
       </p>
       <pre>{post.body}
@@ -33,49 +34,45 @@ function Post(post, onDelete) {
   );
 }
 
-class NewPost extends React.Component {
+class ComposePost extends React.Component {
   constructor(props) {
     super(props);
+    const postPath = props.editingPostKey ? ('/' + props.editingPostKey) : '';
     this.state = {
-      app: props.app,
-      open: false,
-      title: '',
-      body: ''
+      title: (props.title || ''),
+      body: (props.body || ''),
+      editingPostKey: props.editingPostKey,
+      postUrl: thisPageUrl + postPath + '?xhr=true',
+      postMethod: (props.editingPostKey ? 'PUT' : 'POST'),
+      onClose: props.onClose,
+      onRefresh: props.onRefresh
     };
   }
 
   handlePost() {
     const post = {post: {title: this.state.title, body: this.state.body}};
-    console.log("Posting " + JSON.stringify(post, null, 4));
+    console.log(this.state.postMethod + ' ' + JSON.stringify(post, null, 4) + ' to ' + this.state.postUrl);
 
-    fetch(thisPageUrl + '?xhr=true', {
-      method: 'post',
+    fetch(this.state.postUrl, {
+      method: this.state.postMethod,
       headers: standardPostHeaders,
       body: JSON.stringify(post)
     }).then(res => res.json())
       .then(
         (result) => {
-          console.log('Post response: ' + JSON.stringify(result, null, 4));
-          this.setState({open: false, title: '', body: ''});
-          this.state.app.refresh();
+          console.log(this.state.postMethod + ' response: ' + JSON.stringify(result, null, 4));
+          this.setState({title: '', body: ''});
+          this.state.onClose();
+          this.state.onRefresh();
         },
         (error) => {
-          alert("Post failed: " + error);
+          alert(this.state.postMethod + ' failed: ' + error);
         }
       );
   }
 
-  newPostOrCancelButton(newIsOpen) {
-    const text = newIsOpen ? 'Compose new post' : 'Cancel';
-    const onClick = () => {this.setState({open: newIsOpen})}
-    return <button onClick={onClick}>{text}</button>;
-  }
-
   render() {
-    const { open, title, body } = this.state;
-    if (!open) {
-      return this.newPostOrCancelButton(true);
-    }
+    const { title, body } = this.state;
     return (
       <div className="newPost">
         <p><input id="newPostTitle" type="text" value={this.state.title} onInput={(e) => {this.setState({title: e.target.value})}} /></p>
@@ -84,8 +81,8 @@ class NewPost extends React.Component {
         <p><strong>{this.state.title}</strong></p>
         <pre>{this.state.body}
         </pre>
-        <button onClick={() => {this.handlePost()}}>Post</button>
-        {this.newPostOrCancelButton(false)}
+        <button onClick={() => {this.handlePost()}}>Post</button> {' '}
+        <button onClick={() => {this.state.onClose()}}>Cancel</button>
       </div>
     );
   }
@@ -98,6 +95,8 @@ class PostApp extends React.Component {
       error: null,
       isLoaded: false,
       posts: [],
+      composingPost: false,
+      editingPostKey: null
     };
   }
 
@@ -106,26 +105,18 @@ class PostApp extends React.Component {
   }
 
   refresh() {
-    this.setState({
-      isLoaded: false
-    });
+    this.setState({isLoaded: false});
     fetch(thisPageUrl + '?xhr=true')
       .then(res => res.json())
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            posts: result.posts
-          });
+          this.setState({isLoaded: true, posts: result.posts});
         },
         // Note: it's important to handle errors here
         // instead of a catch() block so that we don't swallow
         // exceptions from actual bugs in components.
         (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
+          this.setState({isLoaded: true, error});
         }
       )
   }
@@ -144,19 +135,20 @@ class PostApp extends React.Component {
             this.hidePost(post.compound_key);
           },
           (error) => {
-            alert("Post deletion failed: " + error);
+            alert('Post deletion failed: ' + error);
           }
         );
     } else {
-      console.log("Deletion cancelled");
+      console.log('Deletion cancelled');
     }
   }
 
   hidePost(postKey) {
     const newPosts = this.state.posts.slice(); // i.e. dup
     const index = newPosts.findIndex(element => element.compound_key == postKey);
+
     if (index == -1) {
-      alert("Unexpected: We have no post with ID " + postKey);
+      alert('Unexpected: We have no post with ID ' + postKey);
     } else {
       newPosts.splice(index, 1); // remove 1 element
       this.setState({posts: newPosts});
@@ -170,91 +162,34 @@ class PostApp extends React.Component {
     }
     if (error) {
       return <div>Error: {error.message}</div>;
-    } else {
-      const postComponents = posts.map((post) =>
-        <li key={post.compound_key}>{Post(post, e =>{this.deletePostRequest(post)})}</li>
-      );
-      return (
-        <div className="PostApp">
-          <ul>{postComponents}</ul>
-          <NewPost app={this} />
-          <button onClick={() => {this.refresh()}}>Refresh</button>
-        </div>
-      );
-    }
-  }
-}
-
-class Board extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-    };
-  }
-
-  handleClick(i) {
-    const new_squares = this.state.squares.slice();
-    if (calculateWinner(new_squares) || new_squares[i]) {
-      return;
-    }
-    new_squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({squares: new_squares, xIsNext: !this.state.xIsNext});
-  }
-
-  renderSquare(i) {
-    return (
-      <Square
-        value={this.state.squares[i]}
-        onClick={() => this.handleClick(i)}
-      />
-    );
-  }
-
-  render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if (winner) {
-      status = 'Winner: ' + winner;
-    } else {
-      status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
     }
 
-    return (
-      <div>
-        <div className="status">{status}</div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
-      </div>
-    );
-  }
-}
+    const postComponents = posts.map(post => {
+      const editingThis = post.compound_key == this.state.editingPostKey;
 
-class Game extends React.Component {
-  render() {
+      const listElement = editingThis ?
+        <ComposePost
+          title={post.title}
+          body={post.body}
+          editingPostKey={post.compound_key}
+          onClose={() => {this.setState({editingPostKey: null})}}
+          onRefresh={() => {this.refresh()}}/> :
+        Post(post, e => {this.setState({editingPostKey: post.compound_key})}, e => {this.deletePostRequest(post)});
+
+      const liKey = (editingThis ? 'edit ' : 'show ') + post.compound_key;
+
+      return(<li key={liKey}>{listElement}</li>);
+    });
+
+    const newPostComponent = this.state.composingPost ?
+      <ComposePost onClose={() => {this.setState({composingPost: false})}} onRefresh={() => {this.refresh()}} /> :
+      <button onClick={() => {this.setState({composingPost: true})}}>Compose new post</button>;
+
     return (
-      <div className="game">
-        <div className="game-board">
-          <Board />
-        </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
-        </div>
+      <div className="PostApp">
+        <ul>{postComponents}</ul>
+        {newPostComponent} {' '}
+        <button onClick={() => {this.refresh()}}>Refresh</button>
       </div>
     );
   }
@@ -264,10 +199,10 @@ class Game extends React.Component {
 // ========================================
 
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOMContentLoaded kicks into high gear");
+  console.log('DOMContentLoaded kicks into high gear');
   ReactDOM.render(
     <PostApp/>,
     document.getElementById('react-root')
   );
-  console.log("DOMContentLoaded goes to sleep for another century");
+  console.log('DOMContentLoaded goes to sleep for another century');
 })
